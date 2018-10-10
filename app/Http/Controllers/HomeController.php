@@ -22,6 +22,7 @@ class HomeController extends Controller
     {
         return view('home');
     }
+    
     public function authenticate(Request $request) {
         $socketId = $request->socket_id;
         $channelName = $request->channel_name;

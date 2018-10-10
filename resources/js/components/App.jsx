@@ -78,6 +78,7 @@ export default class App extends Component {
     });
 
     peer.on('signal', (data) => {
+      console.log(data);
       this.channel.trigger(`client-signal-${userId}`, {
         type: 'signal',
         userId: this.user.id,
@@ -108,6 +109,7 @@ export default class App extends Component {
   }
 
   callTo(userId) {
+    console.log('aaaa');
     this.peers[userId] = this.startPeer(userId);
   }
 
