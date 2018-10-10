@@ -18938,7 +18938,17 @@ module.exports = __webpack_require__(81);
 
 /***/ }),
 /* 29 */
-/***/ (function(module, exports, __webpack_require__) {
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_react__ = __webpack_require__(17);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_react___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_react__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_react_dom__ = __webpack_require__(56);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_react_dom___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_1_react_dom__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__components_App__ = __webpack_require__(53);
+
+
 
 
 /**
@@ -18955,7 +18965,9 @@ __webpack_require__(30);
  * or customize the JavaScript scaffolding to fit your unique needs.
  */
 
-__webpack_require__(53);
+if (document.getElementById("app")) {
+  __WEBPACK_IMPORTED_MODULE_1_react_dom___default.a.render(__WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(__WEBPACK_IMPORTED_MODULE_2__components_App__["a" /* default */], null), document.getElementById("app"));
+}
 
 /***/ }),
 /* 30 */
@@ -41004,18 +41016,13 @@ module.exports = function spread(callback) {
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_react__ = __webpack_require__(17);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_react___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_react__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_react_dom__ = __webpack_require__(56);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_react_dom___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_1_react_dom__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__MediaHandler__ = __webpack_require__(62);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3_pusher_js__ = __webpack_require__(63);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3_pusher_js___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_3_pusher_js__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4_simple_peer__ = __webpack_require__(64);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4_simple_peer___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_4_simple_peer__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__keys_json__ = __webpack_require__(80);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__keys_json___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_5__keys_json__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__MediaHandler__ = __webpack_require__(62);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_pusher_js__ = __webpack_require__(63);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_pusher_js___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_2_pusher_js__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3_simple_peer__ = __webpack_require__(64);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3_simple_peer___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_3_simple_peer__);
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -41029,8 +41036,9 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
 
 
 
-
-
+// import { APP_KEY } from '../../../keys.json';
+var APP_KEY = "0391980ae2bd3ff7d6c6";
+var APP_CLUSTER = "ap2";
 
 var App = function (_Component) {
   _inherits(App, _Component);
@@ -41049,7 +41057,8 @@ var App = function (_Component) {
     _this.user.stream = null;
     _this.peers = {};
 
-    _this.mediaHandler = new __WEBPACK_IMPORTED_MODULE_2__MediaHandler__["a" /* default */]();
+    _this.mediaHandler = new __WEBPACK_IMPORTED_MODULE_1__MediaHandler__["a" /* default */]();
+
     _this.setupPusher();
 
     _this.callTo = _this.callTo.bind(_this);
@@ -41063,6 +41072,7 @@ var App = function (_Component) {
     value: function componentWillMount() {
       var _this2 = this;
 
+      console.log(APP_CLUSTER);
       this.mediaHandler.getPermissions().then(function (stream) {
         _this2.setState({ hasMedia: true });
         _this2.user.stream = stream;
@@ -41081,25 +41091,30 @@ var App = function (_Component) {
     value: function setupPusher() {
       var _this3 = this;
 
-      this.pusher = new __WEBPACK_IMPORTED_MODULE_3_pusher_js___default.a(__WEBPACK_IMPORTED_MODULE_5__keys_json__["APP_KEY"], {
-        authEndpoint: '/pusher/auth',
-        cluster: 'ap2',
+      // Pusher.logToConsole = true;
+
+      this.pusher = new __WEBPACK_IMPORTED_MODULE_2_pusher_js___default.a(APP_KEY, {
+        authEndpoint: "/pusher/auth",
+        cluster: APP_CLUSTER,
         auth: {
           params: this.user.id,
           headers: {
-            'X-CSRF-Token': window.csrfToken
+            "X-CSRF-Token": window.csrfToken
           }
         }
       });
 
-      this.channel = this.pusher.subscribe('presence-video-channel');
+      this.channel = this.pusher.subscribe("presence-video-channel");
 
       this.channel.bind('client-signal-' + this.user.id, function (signal) {
         var peer = _this3.peers[signal.userId];
 
-        // if peer is not already exists, we got an incoming call
+        // if peer is not already exists, its an incoming call.
         if (peer === undefined) {
-          _this3.setState({ otherUserId: signal.userId });
+          _this3.setState({
+            otherUserId: signal.userId
+          });
+
           peer = _this3.startPeer(signal.userId, false);
         }
 
@@ -41108,27 +41123,26 @@ var App = function (_Component) {
     }
   }, {
     key: 'startPeer',
-    value: function startPeer(userId) {
+    value: function startPeer(peerId) {
       var _this4 = this;
 
-      var initiator = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : true;
+      var isInitiator = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : true;
 
-      var peer = new __WEBPACK_IMPORTED_MODULE_4_simple_peer___default.a({
-        initiator: initiator,
+      var peer = new __WEBPACK_IMPORTED_MODULE_3_simple_peer___default.a({
+        initiator: isInitiator,
         stream: this.user.stream,
         trickle: false
       });
 
-      peer.on('signal', function (data) {
-        console.log(data);
-        _this4.channel.trigger('client-signal-' + userId, {
-          type: 'signal',
+      peer.on("signal", function (data) {
+        _this4.channel.trigger('client-signal-' + peerId, {
+          type: "signal",
           userId: _this4.user.id,
           data: data
         });
       });
 
-      peer.on('stream', function (stream) {
+      peer.on("stream", function (stream) {
         try {
           _this4.userVideo.srcObject = stream;
         } catch (e) {
@@ -41138,13 +41152,13 @@ var App = function (_Component) {
         _this4.userVideo.play();
       });
 
-      peer.on('close', function () {
-        var peer = _this4.peers[userId];
+      peer.on("close", function () {
+        var peer = _this4.peers[peerId];
         if (peer !== undefined) {
           peer.destroy();
         }
 
-        _this4.peers[userId] = undefined;
+        _this4.peers[peerId] = undefined;
       });
 
       return peer;
@@ -41152,7 +41166,6 @@ var App = function (_Component) {
   }, {
     key: 'callTo',
     value: function callTo(userId) {
-      console.log('aaaa');
       this.peers[userId] = this.startPeer(userId);
     }
   }, {
@@ -41162,26 +41175,47 @@ var App = function (_Component) {
 
       return __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
         'div',
-        { className: 'App' },
-        [1, 2, 3, 4].map(function (userId) {
-          return _this5.user.id !== userId ? __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
-            'button',
-            { key: userId, onClick: function onClick() {
-                return _this5.callTo(userId);
-              } },
-            'Call ',
-            userId
-          ) : null;
-        }),
+        { className: 'container' },
         __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
           'div',
-          { className: 'video-container' },
-          __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement('video', { className: 'my-video', muted: true, ref: function ref(_ref) {
-              _this5.myVideo = _ref;
-            } }),
-          __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement('video', { className: 'user-video', ref: function ref(_ref2) {
-              _this5.userVideo = _ref2;
-            } })
+          { className: 'row justify-content-center' },
+          __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
+            'div',
+            { className: 'col-md-12' },
+            __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
+              'div',
+              { className: 'card' },
+              __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
+                'div',
+                { className: 'card-header' },
+                'My Video'
+              ),
+              __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
+                'div',
+                { className: 'card-body' },
+                [1, 2, 3, 4].map(function (userId) {
+                  return _this5.user.id !== userId ? __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
+                    'button',
+                    { key: userId, onClick: function onClick() {
+                        return _this5.callTo(userId);
+                      } },
+                    'Call User ',
+                    userId
+                  ) : null;
+                }),
+                __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
+                  'div',
+                  { className: 'video-container' },
+                  __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement('video', { className: 'my-video', muted: true, ref: function ref(_ref) {
+                      _this5.myVideo = _ref;
+                    } }),
+                  __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement('video', { className: 'user-video', ref: function ref(_ref2) {
+                      _this5.userVideo = _ref2;
+                    } })
+                )
+              )
+            )
+          )
         )
       );
     }
@@ -41190,12 +41224,7 @@ var App = function (_Component) {
   return App;
 }(__WEBPACK_IMPORTED_MODULE_0_react__["Component"]);
 
-/* harmony default export */ __webpack_exports__["default"] = (App);
-
-
-if (document.getElementById('app')) {
-  __WEBPACK_IMPORTED_MODULE_1_react_dom___default.a.render(__WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(App, null), document.getElementById('app'));
-}
+/* harmony default export */ __webpack_exports__["a"] = (App);
 
 /***/ }),
 /* 54 */
@@ -62168,11 +62197,11 @@ var MediaHandler = function () {
   _createClass(MediaHandler, [{
     key: "getPermissions",
     value: function getPermissions() {
-      return new Promise(function (res, rej) {
+      return new Promise(function (resolve, reject) {
         navigator.mediaDevices.getUserMedia({ video: true, audio: true }).then(function (stream) {
-          res(stream);
-        }).catch(function (err) {
-          throw new Error("Unable to fetch stream " + err);
+          resolve(stream);
+        }).catch(function (error) {
+          throw new Error("Unable to fetch stream " + error + ".");
         });
       });
     }
@@ -73371,12 +73400,7 @@ PassThrough.prototype._transform = function (chunk, encoding, cb) {
 };
 
 /***/ }),
-/* 80 */
-/***/ (function(module, exports) {
-
-module.exports = {"APP_KEY":"0391980ae2bd3ff7d6c6"}
-
-/***/ }),
+/* 80 */,
 /* 81 */
 /***/ (function(module, exports) {
 

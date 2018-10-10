@@ -1,18 +1,19 @@
 import React, { Component } from 'react';
-import ReactDOM from 'react-dom';
 import MediaHandler from '../MediaHandler';
 import Pusher from 'pusher-js';
 import Peer from 'simple-peer';
 
-import { APP_KEY } from '../../../keys.json';
+// import { APP_KEY } from '../../../keys.json';
+const APP_KEY = process.env.MIX_PUSHER_APP_KEY;
+const APP_CLUSTER = process.env.MIX_PUSHER_APP_CLUSTER;
 
-export default class App extends Component {
+class App extends Component {
   constructor() {
     super();
 
     this.state = {
       hasMedia: false,
-      otherUserId: null
+      otherUserId: null,
     };
 
     this.user = window.user;
@@ -20,6 +21,7 @@ export default class App extends Component {
     this.peers = {};
 
     this.mediaHandler = new MediaHandler();
+
     this.setupPusher();
 
     this.callTo = this.callTo.bind(this);
@@ -28,41 +30,46 @@ export default class App extends Component {
   }
 
   componentWillMount() {
-    this.mediaHandler.getPermissions()
-      .then((stream) => {
-        this.setState({hasMedia: true});
-        this.user.stream = stream;
+    console.log(APP_CLUSTER)
+    this.mediaHandler.getPermissions().then(stream => {
+      this.setState({hasMedia: true});
+      this.user.stream = stream;
 
-        try {
-          this.myVideo.srcObject = stream;
-        } catch (e) {
-          this.myVideo.src = URL.createObjectURL(stream);
-        }
+      try {
+        this.myVideo.srcObject = stream;
+      } catch (e) {
+        this.myVideo.src = URL.createObjectURL(stream);
+      }
 
-        this.myVideo.play();
-      })
+      this.myVideo.play();
+    });
   }
 
   setupPusher() {
+    // Pusher.logToConsole = true;
+
     this.pusher = new Pusher(APP_KEY, {
-      authEndpoint: '/pusher/auth',
-      cluster: 'ap2',
+      authEndpoint: "/pusher/auth",
+      cluster: APP_CLUSTER,
       auth: {
         params: this.user.id,
         headers: {
-          'X-CSRF-Token': window.csrfToken
-        }
-      }
+          "X-CSRF-Token": window.csrfToken,
+        },
+      },
     });
 
-    this.channel = this.pusher.subscribe('presence-video-channel');
+    this.channel = this.pusher.subscribe("presence-video-channel");
 
-    this.channel.bind(`client-signal-${this.user.id}`, (signal) => {
+    this.channel.bind(`client-signal-${this.user.id}`, signal => {
       let peer = this.peers[signal.userId];
 
-      // if peer is not already exists, we got an incoming call
-      if(peer === undefined) {
-        this.setState({otherUserId: signal.userId});
+      // if peer is not already exists, its an incoming call.
+      if (peer === undefined) {
+        this.setState({
+          otherUserId: signal.userId,
+        });
+
         peer = this.startPeer(signal.userId, false);
       }
 
@@ -70,23 +77,22 @@ export default class App extends Component {
     });
   }
 
-  startPeer(userId, initiator = true) {
+  startPeer(peerId, isInitiator = true) {
     const peer = new Peer({
-      initiator,
+      initiator: isInitiator,
       stream: this.user.stream,
-      trickle: false
+      trickle: false,
     });
 
-    peer.on('signal', (data) => {
-      console.log(data);
-      this.channel.trigger(`client-signal-${userId}`, {
-        type: 'signal',
+    peer.on("signal", (data) => {
+      this.channel.trigger(`client-signal-${peerId}`, {
+        type: "signal",
         userId: this.user.id,
-        data: data
+        data: data,
       });
     });
 
-    peer.on('stream', (stream) => {
+    peer.on("stream", (stream) => {
       try {
         this.userVideo.srcObject = stream;
       } catch (e) {
@@ -96,39 +102,46 @@ export default class App extends Component {
       this.userVideo.play();
     });
 
-    peer.on('close', () => {
-      let peer = this.peers[userId];
-      if(peer !== undefined) {
+    peer.on("close", () => {
+      let peer = this.peers[peerId];
+      if (peer !== undefined) {
         peer.destroy();
       }
 
-      this.peers[userId] = undefined;
+      this.peers[peerId] = undefined;
     });
 
     return peer;
   }
 
   callTo(userId) {
-    console.log('aaaa');
     this.peers[userId] = this.startPeer(userId);
   }
 
   render() {
     return (
-      <div className="App">
-        {[1,2,3,4].map((userId) => {
-          return this.user.id !== userId ? <button key={userId} onClick={() => this.callTo(userId)}>Call {userId}</button> : null;
-        })}
+      <div className="container">
+        <div className="row justify-content-center">
+          <div className="col-md-12">
+            <div className="card">
+              <div className="card-header">My Video</div>
 
-        <div className="video-container">
-          <video className="my-video" muted ref={(ref) => {this.myVideo = ref;}}></video>
-          <video className="user-video" ref={(ref) => {this.userVideo = ref;}}></video>
+              <div className="card-body">
+                {[1, 2, 3, 4].map(userId => {
+                  return this.user.id !== userId ? <button key={userId} onClick={() => this.callTo(userId)}>Call User {userId}</button> : null;
+                })}
+
+                <div className="video-container">
+                  <video className="my-video" muted ref={ref => {this.myVideo = ref;}}/>
+                  <video className="user-video" ref={ref => {this.userVideo = ref;}}/>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     );
   }
 }
 
-if (document.getElementById('app')) {
-  ReactDOM.render(<App />, document.getElementById('app'));
-}
+export default App;

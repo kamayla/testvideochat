@@ -23,15 +23,20 @@ class HomeController extends Controller
         return view('home');
     }
 
-    public function authenticate(Request $request) {
-        $socketId = $request->socket_id;
-        $channelName = $request->channel_name;
-        $pusher = new Pusher(env('PUSHER_APP_KEY'), env('PUSHER_APP_SECRET'), env('PUSHER_APP_ID'), [
-            'cluster' => 'ap2',
-            'encrypted' => true
-        ]);
-        $presence_data = ['name' => auth()->user()->name];
-        $key = $pusher->presence_auth($channelName, $socketId, auth()->id(), $presence_data);
+    public function authenticate(Request $request)
+    {
+        $socketId    = $request->get('socket_id');
+        $channelName = $request->get('channel_name');
+        $pusher = new Pusher(
+            env('PUSHER_APP_KEY'), env('PUSHER_APP_SECRET'), env('PUSHER_APP_ID'), [
+                'cluster'   => env('PUSHER_APP_CLUSTER'),
+                'encrypted' => true,
+            ]
+        );
+        $presenceData = [
+            'name' => auth()->user()->name,
+        ];
+        $key          = $pusher->presence_auth($channelName, $socketId, auth()->user()->id, $presenceData);
         return response($key);
     }
 }
